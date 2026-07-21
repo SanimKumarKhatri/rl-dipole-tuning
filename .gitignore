@@ -1,0 +1,8 @@
+nec-env/
+__pycache__/
+*.pyc
+*.zip
+.ipynb_checkpoints/
+venv/
+.venv/
+*.egg-info/
