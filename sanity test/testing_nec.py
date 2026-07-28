@@ -36,7 +36,7 @@ def simulate_dipole(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0, heig
         z = height_m if height_m else 0.25 * (300.0 / freq_mhz)  # default: quarter-wave up
         geo.wire(1, n_segs, -half_len, 0, z, half_len, 0, z, wire_radius_m, 1.0, 1.0)
     else:
-        # Vertical dipole centered at origin, free space (same as before)
+        # Vertical dipole centered at origin, free space
         geo.wire(1, n_segs, 0, 0, -half_len, 0, 0, half_len, wire_radius_m, 1.0, 1.0)
 
     nec.geometry_complete(0)
@@ -68,7 +68,7 @@ def simulate_dipole(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0, heig
     #
     # IMPORTANT: with real ground present, NEC2 only computes the upper half-space
     # (theta 0-90 deg, i.e. above the horizon) -- points "underground" (theta>90)
-    # are physically meaningless and come back as sentinel/garbage values, so we
+    # are physically meaningless and come back as garbage values, so we
     # must not sweep past 90 deg when ground=True.
     if ground:
         n_theta, d_theta = 19, 5.0   # theta: 0 to 90 deg in 5 deg steps
@@ -84,14 +84,13 @@ def simulate_dipole(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0, heig
     gamma = abs((impedance - z0) / (impedance + z0))
     vswr = (1 + gamma) / (1 - gamma) if gamma < 0.999 else 999.0
 
-    # --- NEW: pull the radiation pattern and find peak gain ---
+    # pull the radiation pattern and find peak gain
     rp = nec.get_radiation_pattern(0)
     gains_db = rp.get_gain()          # 2D array [theta_index][phi_index], in dBi
     thetas = rp.get_theta_angles()    # degrees
     phis = rp.get_phi_angles()        # degrees
  
-    # -999.99 is NEC2's sentinel for "not computed / invalid point" (e.g. exactly
-    # on the horizon in some configurations); skip it and anything non-finite.
+    # -999.99 is NEC2's sentinel for "not computed / invalid point"
     max_gain = -999.0
     max_theta, max_phi = None, None
     for i, th in enumerate(thetas):
