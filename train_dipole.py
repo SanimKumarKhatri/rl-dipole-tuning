@@ -9,10 +9,10 @@ def make_env():
 
 def main():
     env = make_env()
-    model = PPO("MlpPolicy", env, verbose=1, n_steps=356, batch_size=64, learning_rate=3e-4)
+    model = PPO("MlpPolicy", env, verbose=1, n_steps=256, batch_size=64, learning_rate=3e-4)
 
     print("Training PPO agent...")
-    model.learn(total_timesteps=10000)
+    model.learn(total_timesteps=20000)
 
     print("Evaluating training agent")
     obs, _ = env.reset()
