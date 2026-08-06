@@ -5,26 +5,27 @@ Using PPO (via Stable-Baselines3) to learn the optimal length of a center-fed ha
 
 ## Why RL for this?
 
-The textbook answer for a half-wave dipole length is well known,  L $\approx$ 0.48 × $\lambda$, and a simple bisection or grid search over length would converge to a low-VSWR design just fine for this single-parameter case.
+The textbook answer for a half-wave dipole length is well known,  L $\approx$ 0.48 $\times$ $\lambda$, and a simple bisection or grid search over length would converge to a low-VSWR design just fine for this single-parameter case.
 
-I used this as a deliberately small, well-understood problem to build and debug an RL loop against a real EM solver (NEC2) rather than an analytic reward function. The end goal is to extend this to antenna geometries where there isn't a closed-form target (multi-element arrays, loaded elements, non-uniform wire radius) where a search over evaluations against a real solver is closer to what tools like this would actually be useful for. Starting with a dipole, where I can sanity check the RL result against 0.48λ, was mainly a way to validate that the following pipeline was correct before moving on a problem without a known-good answer.
+I used this as a deliberately small, well-understood problem to build and debug an RL loop against a real EM solver (NEC2) rather than an analytic reward function. The end goal is to extend this to antenna geometries where there isn't a closed-form target (multi-element arrays, loaded elements, non-uniform wire radius) where a search over evaluations against a real solver is closer to what tools like this would actually be useful for. Starting with a dipole, where I can sanity check the RL result against 0.48 $\lambda$, was mainly a way to validate that the following pipeline was correct before moving on a problem without a known-good answer.
 
 ```mermaid
 flowchart LR
-    id1(NEC2) --> id2(gym) --> id3(PPO)
+    id1(NEC2) -- (VSWR) --> id2(gym) -- (reward) --> id3(PPO)
+    id3(PPO) -- (action) --> id2(gym) -- (length) --> id1(NEC)
 ```
 
 ## Environment (dipole_env.py)
 * Observation: [dipole_length_m, current_vswr]
 * Action: continuous length adjustment, $\Delta$ length $\epsilon$ [-0.005, 0.005] m per step
 * Reward: `-log(VSWR)`: a log reward gives a much smoother gradient than raw `-VSWR`, which spikes hard for detuned lengths and made early training runs unstable.
-* Termination: episode ends when `VSWR < 1.05`, or after 25 steps
+* Termination: episode ends when `VSWR < 1.05`, or after 150 steps
 * Simulator: each step runs a full NEC2 simulation (PyNEC) on a 21-segment wire model at 100 MHz, center-fed, over free space `gn_card(-1, 0, 0, 0, 0, 0, 0, 0)`
 
 ## Training (train_dipole.py)
 * PPO, MlpPolicy, n_steps=256, batch_size=64
 * Wrapped in VecNormalize (norm_obs=True, norm_reward=True), observation scale (length of 1 m vs. VSWR of 1–1000) is wildly mismatched otherwise, and the policy effectively ignored length as a signal without this.
-* Normalization stats saved to `vecnormalize.pkl` and reloaded in an (training=False) eval environment, separate from the training environment.
+* Normalization stats saved to `vecnormalize.pkl` and reloaded in an eval environment (training=False), separate from the training environment.
 
 ## Results
 
@@ -34,13 +35,9 @@ $\lambda$ = 300 / f_MHz = 3.0 m
 
 L = 0.48 × $\lambda$ = 1.44 m
 
-1.4303
-
 The trained agent converges to a length **L = 1.4338 m** with VSWR= 1.4305 at 100.0 MHz. This is 0.4306% deviation from the theoretical value. 
 
-This falls short of the environment's strict termination threshold (VSWR < 1.05) within the fixed episode, but confirms the RL policy is learning to navigate towards truw physical resonance rather than a local minimum.
-
-The reward function and the steps should be reevaluated for better result. 
+This falls short of the environment's intentionally strict termination threshold (VSWR < 1.05) within the fixed episode, but confirms the RL policy is learning to navigate towards true physical resonance rather than a local minimum.
 
 ## Setup
 ```bash
