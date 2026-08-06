@@ -39,6 +39,19 @@ The trained agent converges to a length **L = 1.4338 m** with VSWR= 1.4305 at 10
 
 This falls short of the environment's intentionally strict termination threshold (VSWR < 1.05) within the fixed episode, but confirms the RL policy is learning to navigate towards true physical resonance rather than a local minimum.
 
+### Training & Convergence
+
+**Training reward over time:**
+![Reward curve](reward_curve.png)
+
+Mean episode reward (`rollout/ep_rew_mean`) over 150,000 training timesteps. Reward drops sharply in the first ~2,000 steps as the randomly-initialized policy explores, then climbs steadily and plateaus around -120 by ~50,000
+timesteps, indicating stable convergence rather than continued instability.
+
+**Agent trajectory (single evaluation episode):**
+![Convergence](convergence.png)
+
+Length and VSWR at each step of a deterministic evaluation episode, starting from a random initial length near 0.98 m. The agent moves length steadily toward the theoretical resonant length (dashed red line), with VSWR dropping from ~100 to near the termination threshold (dashed green line) within the first ~90 steps, then holding in a tight band around resonance for the remainder of the episode.
+
 ## Setup
 ```bash
 pip install -r requirements.txt
