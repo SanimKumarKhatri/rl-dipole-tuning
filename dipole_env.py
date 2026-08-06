@@ -37,7 +37,7 @@ class DipoleEnv(gym.Env):
         self.length_max = length_max
         self.max_steps = max_steps
 
-        self.action_space = spaces.Box(low=-0.05, high=0.05, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-0.01, high=0.01, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(
             low=np.array([self.length_min, 1.0], dtype=np.float32),
             high=np.array([self.length_max, 1000.0], dtype=np.float32),
@@ -55,12 +55,12 @@ class DipoleEnv(gym.Env):
 
     def step(self, action):
         self.steps += 1
-        delta = float(np.clip(action[0], -0.05, 0.05))
+        delta = float(np.clip(action[0], self.action_space.low[0], self.action_space.high[0]))
         self.length = float(np.clip(self.length + delta, self.length_min, self.length_max))
 
         _, vswr = simulate_dipole_vswr(self.length, self.target_freq_mhz, self.wire_radius_m)
         
-        reward = -vswr
+        reward = -np.log(vswr)
         terminated = vswr < 1.05
         truncated = self.steps >= self.max_steps
 
