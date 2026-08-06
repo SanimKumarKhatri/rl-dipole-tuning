@@ -1,5 +1,7 @@
 # Environment for training a center-fed dipole antenna using NEC2 simulations.
 import numpy as np
+import gymnasium as gym
+from gymnasium import spaces
 from PyNEC import nec_context
 
 def simulate_dipole_vswr(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0):
@@ -22,6 +24,49 @@ def simulate_dipole_vswr(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0)
     gamma = abs((impedance - z0) / (impedance + z0))
     vswr = (1 + gamma) / (1 - gamma) if gamma < 0.999 else 999.0
     return impedance, vswr
+
+class DipoleEnv(gym.Env):
+    metadata = {"render_modes": []}
+
+    def __init__(self, target_freq_mhz=100.0, wire_radius_m=0.001,
+                 length_min=0.9, length_max=1.8, max_steps=25):
+        super().__init__()
+        self.target_freq_mhz = target_freq_mhz
+        self.wire_radius_m = wire_radius_m
+        self.length_min = length_min
+        self.length_max = length_max
+        self.max_steps = max_steps
+
+        self.action_space = spaces.Box(low=-0.05, high=0.05, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=np.array([self.length_min, 1.0], dtype=np.float32),
+            high=np.array([self.length_max, 1000.0], dtype=np.float32),
+        )
+
+        self.length = None
+        self.steps = 0
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.steps = 0
+        self.length = float(self.np_random.uniform(self.length_min, self.length_max))
+        _, vswr = simulate_dipole_vswr(self.length, self.target_freq_mhz, self.wire_radius_m)
+        return np.array([self.length, vswr], dtype=np.float32), {}
+
+    def step(self, action):
+        self.steps += 1
+        delta = float(np.clip(action[0], -0.05, 0.05))
+        self.length = float(np.clip(self.length + delta, self.length_min, self.length_max))
+
+        _, vswr = simulate_dipole_vswr(self.length, self.target_freq_mhz, self.wire_radius_m)
+        
+        reward = -vswr
+        terminated = vswr < 1.05
+        truncated = self.steps >= self.max_steps
+
+        obs = np.array([self.length, vswr], dtype=np.float32)
+        info = {"length": self.length, "vswr": vswr}
+        return obs, reward, terminated, truncated, info
 
 if __name__ == "__main__":
     # Test draft simulation function
