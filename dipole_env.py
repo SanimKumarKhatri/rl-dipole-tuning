@@ -4,6 +4,8 @@ import gymnasium as gym
 from gymnasium import spaces
 from PyNEC import nec_context
 
+MAX_STEPS = 150
+
 def simulate_dipole_vswr(length_m, freq_mhz=100.0, wire_radius_m=0.001, z0=50.0):
     """Run one NEC2 simulation and return (impedance, vswr) for a center-fed dipole."""
     nec = nec_context()
@@ -29,7 +31,7 @@ class DipoleEnv(gym.Env):
     metadata = {"render_modes": []}
 
     def __init__(self, target_freq_mhz=100.0, wire_radius_m=0.001,
-                 length_min=0.9, length_max=1.8, max_steps=25):
+                 length_min=0.9, length_max=1.8, max_steps=MAX_STEPS):
         super().__init__()
         self.target_freq_mhz = target_freq_mhz
         self.wire_radius_m = wire_radius_m
@@ -37,7 +39,7 @@ class DipoleEnv(gym.Env):
         self.length_max = length_max
         self.max_steps = max_steps
 
-        self.action_space = spaces.Box(low=-0.01, high=0.01, shape=(1,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-0.005, high=0.005, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(
             low=np.array([self.length_min, 1.0], dtype=np.float32),
             high=np.array([self.length_max, 1000.0], dtype=np.float32),
