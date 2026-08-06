@@ -67,8 +67,3 @@ class DipoleEnv(gym.Env):
         obs = np.array([self.length, vswr], dtype=np.float32)
         info = {"length": self.length, "vswr": vswr}
         return obs, reward, terminated, truncated, info
-
-if __name__ == "__main__":
-    # Test draft simulation function
-    z, vswr = simulate_dipole_vswr(1.5, freq_mhz=100.0)
-    print(f"Test Run @ 1.5m -> Impedance: {z}, VSWR: {vswr:.4f}")
