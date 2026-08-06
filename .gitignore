@@ -19,6 +19,7 @@ dist/
 .eggs/
 logs/
 tensorboard_logs/
+tb_logs/
 runs/
 checkpoints/
 *.nec
