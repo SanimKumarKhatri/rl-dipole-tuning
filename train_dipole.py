@@ -1,7 +1,7 @@
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
-from dipole_env import DipoleEnv, simulate_dipole_vswr
+from dipole_env import DipoleEnv, simulate_dipole_vswr, MAX_STEPS
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
 TARGET_FREQ_MHZ = 100.0
@@ -15,7 +15,7 @@ def main():
     model = PPO("MlpPolicy", train_env, verbose=1, n_steps=256, batch_size=64, learning_rate=3e-4)
     
     print("Training PPO agent...")
-    model.learn(total_timesteps=20000)
+    model.learn(total_timesteps=150000)
 
     model.save("dipole_ppo_model")
     train_env.save("vecnormalize.pkl")
@@ -28,7 +28,7 @@ def main():
 
     obs = eval_env.reset()
     best_length, best_vswr = None, np.inf
-    for _ in range(30):
+    for _ in range(MAX_STEPS):
         action, _ = model.predict(obs, deterministic=True)
         obs, reward, done, info = eval_env.step(action)
         step_info = info[0]
