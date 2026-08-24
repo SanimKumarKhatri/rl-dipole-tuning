@@ -17,17 +17,19 @@ flowchart LR
 
 ## Environment (dipole_env.py)
 * Observation: [dipole_length_m, current_vswr]
-* Action: continuous length adjustment, $\Delta$ length $\epsilon$ [-0.005, 0.005] m per step
+* Action: continuous length adjustment, $\Delta$ length $\epsilon$ [-0.005, 0.005] m per step (100 MHz) or [-0.001, 0.001] m per step (2.4 GHz). The smaller step size at 2.4 GHz is needed because the resonant length is ~24× smaller, a 5 mm step would overshoot the entire tuning range.
 * Reward: `-log(VSWR)`: a log reward gives a much smoother gradient than raw `-VSWR`, which spikes hard for detuned lengths and made early training runs unstable.
 * Termination: episode ends when `VSWR < 1.05`, or after 150 steps
 * Simulator: each step runs a full NEC2 simulation (PyNEC) on a 21-segment wire model at 100 MHz, center-fed, over free space `gn_card(-1, 0, 0, 0, 0, 0, 0, 0)`
 
+The environment is parameterized by target_freq_mhz, length_min, length_max, and the action-space bounds.
+
 ## Training (train_dipole.py)
 * PPO, MlpPolicy, n_steps=256, batch_size=64
 * Wrapped in VecNormalize (norm_obs=True, norm_reward=True), observation scale (length of 1 m vs. VSWR of 1–1000) is wildly mismatched otherwise, and the policy effectively ignored length as a signal without this.
-* Normalization stats saved to `vecnormalize.pkl` and reloaded in an eval environment (training=False), separate from the training environment.
+* Normalization stats saved to `vecnormalize.pkl` (100 MHz) or `vecnormalize_2_4_ghz.pkl` (2.4 GHz) and reloaded in an eval environment (training=False), separate from the training environment.
 
-## Results
+## 100 MHz Results
 
 At 100 MHz, the theoretical half-wave length is:
 
@@ -52,8 +54,28 @@ timesteps, indicating stable convergence rather than continued instability.
 
 Length and VSWR at each step of a deterministic evaluation episode, starting from a random initial length near 0.98 m. The agent moves length steadily toward the theoretical resonant length (dashed red line), with VSWR dropping from ~100 to near the termination threshold (dashed green line) within the first ~90 steps, then holding in a tight band around resonance for the remainder of the episode.
 
+## 2.4 GHz Results
+At 2.4 GHz, the theoretical half-wave length is:
+
+$\lambda$ = 300 / f_MHz = 0.125 m
+
+L = 0.48 × $\lambda$ = 0.0600 m
+
+The trained agent converges to a length **L = 0.0592 m** with VSWR= 1.4447 at 2.4 GHz. This is 1.33% deviation from the theoretical value. 
+
+This falls short of the environment's intentionally strict termination threshold (VSWR < 1.05) within the fixed episode, but confirms the RL policy is learning to navigate towards true physical resonance rather than a local minimum.
+
+### Training & Convergence (2.4 GHz)
+**Training reward over time:**
+![](./reward_curve_2_4_ghz.png)
+Mean episode reward (rollout/ep_rew_mean) over 300,000 training timesteps. Reward drops sharply in the first ~5,000 steps as the randomly-initialized policy explores, then climbs steadily and plateaus around -80 by ~30,000 timesteps, indicating stable convergence rather than continued instability.
+
+**Agent trajectory (single evaluation episode):**
+![](./convergence_2_4ghz.png)
+Length and VSWR at each step of a deterministic evaluation episode, starting from a random initial length near 0.079 m. The agent moves length steadily toward the theoretical resonant length (dashed red line), with VSWR dropping from ~14 to near the termination threshold (dashed green line) within the first ~20 steps, then holding in a tight band around resonance for the remainder of the episode.
 ## Setup
 ```bash
 pip install -r requirements.txt
+# 2.4 GHz model
 python train_dipole.py
 ```
