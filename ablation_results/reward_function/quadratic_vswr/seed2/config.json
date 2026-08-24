@@ -1,0 +1,15 @@
+{
+  "frequency_mhz": 100.0,
+  "max_steps": 150,
+  "total_timesteps": 150000,
+  "n_steps": 256,
+  "batch_size": 64,
+  "learning_rate": 0.0003,
+  "n_envs": 1,
+  "n_seeds": 3,
+  "eval_episodes": 10,
+  "save_dir": "./ablation_results",
+  "use_vecnormalize": false,
+  "reward_type": "quadratic",
+  "seed": 2
+}

@@ -1,0 +1,190 @@
+{
+  "none": {
+    "mean_error_pct": 20.056844874382378,
+    "std_error_pct": 7.603626142084306,
+    "mean_vswr": 81.04316133214496,
+    "std_vswr": 54.09593382433286,
+    "mean_reward": -402.2762959798177,
+    "std_reward": 127.06941337983739,
+    "n_successful": 3,
+    "seeds": [
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -449.84661865234375,
+        "std_reward": 293.60687255859375,
+        "mean_error_pct": 23.392595935692466,
+        "std_error_pct": 17.277997071994186,
+        "mean_vswr": 109.88601841563631,
+        "std_vswr": 88.24657559197303,
+        "mean_final_length": 1.1288533814739716,
+        "std_final_length": 0.2802873413834258
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -528.5669555664062,
+        "std_reward": 243.09007263183594,
+        "mean_error_pct": 27.242063119668508,
+        "std_error_pct": 15.669490683410414,
+        "mean_vswr": 127.9863991786057,
+        "std_vswr": 82.41403230557911,
+        "mean_final_length": 1.0762857089232267,
+        "std_final_length": 0.2692836830800151
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -228.41531372070312,
+        "std_reward": 91.75975799560547,
+        "mean_error_pct": 9.535875567786167,
+        "std_error_pct": 7.733430425531563,
+        "mean_vswr": 5.25706640219288,
+        "std_vswr": 4.65657094858988,
+        "mean_final_length": 1.446683391823879,
+        "std_final_length": 0.17667072238395573
+      }
+    ]
+  },
+  "vecnormalize_full": {
+    "mean_error_pct": 0.4159406249520869,
+    "std_error_pct": 0.10457545277761032,
+    "mean_vswr": 1.4341923466329753,
+    "std_vswr": 0.0007963729940138472,
+    "mean_reward": -135.64469401041666,
+    "std_reward": 5.020006492772906,
+    "n_successful": 3,
+    "seeds": [
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -132.43783569335938,
+        "std_reward": 71.2494888305664,
+        "mean_error_pct": 0.5465680177373397,
+        "std_error_pct": 0.13733878869386607,
+        "mean_vswr": 1.433070900103308,
+        "std_vswr": 0.003714264947223292,
+        "mean_final_length": 1.4321294205445823,
+        "std_final_length": 0.0019776785571916713
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -131.7628936767578,
+        "std_reward": 69.14290618896484,
+        "mean_error_pct": 0.4106802480019258,
+        "std_error_pct": 0.2475330926483149,
+        "mean_vswr": 1.4346631633951854,
+        "std_vswr": 0.003388230023396547,
+        "mean_final_length": 1.434086204428772,
+        "std_final_length": 0.0035644765341357344
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -142.7333526611328,
+        "std_reward": 70.83697509765625,
+        "mean_error_pct": 0.2905736091169952,
+        "std_error_pct": 0.22553425969312735,
+        "mean_vswr": 1.4348429764004336,
+        "std_vswr": 0.0038708661463860475,
+        "mean_final_length": 1.435815740028715,
+        "std_final_length": 0.0032476933395810337
+      }
+    ]
+  },
+  "vecnormalize_obs_only": {
+    "mean_error_pct": 0.33821224793805005,
+    "std_error_pct": 0.04991754576429896,
+    "mean_vswr": 1.4332392865609453,
+    "std_vswr": 0.0006010910200665253,
+    "mean_reward": -109.22149403889973,
+    "std_reward": 16.379869280358214,
+    "n_successful": 3,
+    "seeds": [
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -131.63641357421875,
+        "std_reward": 64.97698974609375,
+        "mean_error_pct": 0.28372621569445877,
+        "std_error_pct": 0.16372184630623593,
+        "mean_vswr": 1.4333148064030863,
+        "std_vswr": 0.002583329641190446,
+        "mean_final_length": 1.4359143424939997,
+        "std_final_length": 0.0023575945868097976
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -103.0765151977539,
+        "std_reward": 37.71866226196289,
+        "mean_error_pct": 0.4043280859339915,
+        "std_error_pct": 0.22549491308428868,
+        "mean_vswr": 1.4339347988858306,
+        "std_vswr": 0.0019591453406905745,
+        "mean_final_length": 1.4341776755625504,
+        "std_final_length": 0.003247126748413757
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -92.95155334472656,
+        "std_reward": 49.290096282958984,
+        "mean_error_pct": 0.32658244218569976,
+        "std_error_pct": 0.15277006014154942,
+        "mean_vswr": 1.432468254393919,
+        "std_vswr": 0.0029773088805762024,
+        "mean_final_length": 1.4352972128325256,
+        "std_final_length": 0.0021998888660383115
+      }
+    ]
+  },
+  "vecnormalize_reward_only": {
+    "mean_error_pct": 13.356367662607072,
+    "std_error_pct": 3.3827269567278067,
+    "mean_vswr": 8.059296893996652,
+    "std_vswr": 1.8575184250652588,
+    "mean_reward": -266.06109619140625,
+    "std_reward": 44.17901468137777,
+    "n_successful": 3,
+    "seeds": [
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -322.2582702636719,
+        "std_reward": 104.96875762939453,
+        "mean_error_pct": 18.139886332767823,
+        "std_error_pct": 10.479440342135371,
+        "mean_vswr": 10.686206262255263,
+        "std_vswr": 5.931043132746801,
+        "mean_final_length": 1.6827856368081435,
+        "std_final_length": 0.17905328113334118
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -214.3175048828125,
+        "std_reward": 142.09323120117188,
+        "mean_error_pct": 10.912413070777742,
+        "std_error_pct": 11.50317810178603,
+        "mean_vswr": 6.737331780868962,
+        "std_vswr": 6.3945226116089655,
+        "mean_final_length": 1.5708612517808007,
+        "std_final_length": 0.18710007569733794
+      },
+      {
+        "mean_length": 150.0,
+        "std_length": 0.0,
+        "mean_reward": -261.6075134277344,
+        "std_reward": 127.88519287109375,
+        "mean_error_pct": 11.016803584275651,
+        "std_error_pct": 11.418544030576236,
+        "mean_vswr": 6.754352638865731,
+        "std_vswr": 6.380669235394119,
+        "mean_final_length": 1.5693580283864308,
+        "std_final_length": 0.18833487508346722
+      }
+    ]
+  }
+}

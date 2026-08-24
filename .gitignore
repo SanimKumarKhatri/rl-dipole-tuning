@@ -1,5 +1,8 @@
 nec-env/
 __pycache__/
+ablation_results/**/model.zip
+ablation_results/**/vecnormalize.pkl
+ablation_results/**/tensorboard/
 *.pyc
 *.zip
 *.pkl
@@ -12,6 +15,8 @@ env/
 *.py[cod]
 *$py.class
 *.so
+*.nec2
+*.geo
 .Python
 build/
 dist/
