@@ -35,11 +35,11 @@ ABLATION_STUDIES = {
     "action_space": {
         "description": "Test action space formulations",
         "variants": {
-            "discrete_5": {"action_type": "discrete", "actions": [-0.01, -0.005, 0.0, 0.005, 0.01]},
-            "continuous_narrow": {"action_type": "continuous", "low": -0.002, "high": 0.002},
-            "continuous_default": {"action_type": "continuous", "low": -0.005, "high": 0.005},
-            "continuous_wide": {"action_type": "continuous", "low": -0.01, "high": 0.01},
-            "absolute": {"action_type": "continuous_absolute", "low": 0.9, "high": 1.8},
+            "discrete_5": {"action_type": "discrete", "actions": [-0.002, -0.001, 0.0, 0.001, 0.002]},
+            "continuous_narrow": {"action_type": "continuous", "low": -0.0003, "high": 0.0003},
+            "continuous_default": {"action_type": "continuous", "low": -0.001, "high": 0.001},
+            "continuous_wide": {"action_type": "continuous", "low": -0.002, "high": 0.002},
+            "absolute": {"action_type": "continuous_absolute", "low": 0.03, "high": 0.09},
         },
     },
 
@@ -67,9 +67,14 @@ ABLATION_STUDIES = {
 }
 
 DEFAULT_CONFIG = {
-    "frequency_mhz": 100.0,
-    "max_steps": 150,
-    "total_timesteps": 150_000,
+    "frequency_mhz": 2400.0,
+    "length_min": 0.03,
+    "length_max": 0.09,
+    "wire_radius_m": 0.00015,
+    "low": -0.001,
+    "high": 0.001,
+    "max_steps": 50,
+    "total_timesteps": 15_000,
     "n_steps": 256,
     "batch_size": 64,
     "learning_rate": 3e-4,
@@ -77,5 +82,7 @@ DEFAULT_CONFIG = {
     "n_seeds": 3,
     "eval_episodes": 10,
     "save_dir": "./ablation_results",
-    "use_vecnormalize": False,
+    "use_vecnormalize": True,
+    "norm_obs": True,
+    "norm_reward": False,
 }

@@ -1,12 +1,12 @@
 {
   "mean_length": 150.0,
   "std_length": 0.0,
-  "mean_reward": -363.6736755371094,
-  "std_reward": 164.79981994628906,
-  "mean_error_pct": 11.132376598868857,
-  "std_error_pct": 11.32366202576943,
-  "mean_vswr": 6.774074483885181,
-  "std_vswr": 6.364549230104863,
-  "mean_final_length": 1.5676937769762886,
-  "std_final_length": 0.1896870769555689
+  "mean_reward": -209.05126953125,
+  "std_reward": 26.0189208984375,
+  "mean_error_pct": 2.5213458143631797,
+  "std_error_pct": 0.6675946497232023,
+  "mean_vswr": 1.4552788571846005,
+  "std_vswr": 0.022430814920791693,
+  "mean_final_length": 0.05848719251138209,
+  "std_final_length": 0.0004005567898339213
 }

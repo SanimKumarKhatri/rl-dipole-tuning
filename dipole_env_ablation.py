@@ -18,7 +18,7 @@ class DipoleEnvAblation(gym.Env):
         super().__init__()
 
         self.config = config or {}
-        self.target_freq_mhz = self.config.get("frequency_mhz", 100.0)
+        self.target_freq_mhz = self.config.get("frequency_mhz", 2400.0)
         self.wavelength = 300.0 / self.target_freq_mhz  # meters
         self.theoretical_length = 0.48 * self.wavelength
         self.length_min = self.config.get("length_min", 0.9)

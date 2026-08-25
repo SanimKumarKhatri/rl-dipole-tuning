@@ -1,5 +1,8 @@
 {
-  "frequency_mhz": 100.0,
+  "frequency_mhz": 2400.0,
+  "length_min": 0.03,
+  "length_max": 0.09,
+  "wire_radius_m": 0.00015,
   "max_steps": 150,
   "total_timesteps": 150000,
   "n_steps": 256,

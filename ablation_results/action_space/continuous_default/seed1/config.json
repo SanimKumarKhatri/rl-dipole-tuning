@@ -1,5 +1,10 @@
 {
-  "frequency_mhz": 100.0,
+  "frequency_mhz": 2400.0,
+  "length_min": 0.03,
+  "length_max": 0.09,
+  "wire_radius_m": 0.00015,
+  "low": -0.001,
+  "high": 0.001,
   "max_steps": 150,
   "total_timesteps": 150000,
   "n_steps": 256,
@@ -9,9 +14,9 @@
   "n_seeds": 3,
   "eval_episodes": 10,
   "save_dir": "./ablation_results",
-  "use_vecnormalize": false,
+  "use_vecnormalize": true,
+  "norm_obs": true,
+  "norm_reward": false,
   "action_type": "continuous",
-  "low": -0.005,
-  "high": 0.005,
   "seed": 1
 }

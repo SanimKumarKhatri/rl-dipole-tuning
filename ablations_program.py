@@ -63,9 +63,12 @@ def evaluate_policy(model, env, n_eval_episodes=10):
 
 
 def run_single_experiment(ablation_name, variant_name, variant_config, 
-                          seed=0, save_dir="./ablation_results"):
+                          seed=0, save_dir="./ablation_results", total_timesteps=None):
     env_config = {**DEFAULT_CONFIG, **variant_config}
     env_config["seed"] = seed
+
+    run_timesteps = total_timesteps if total_timesteps is not None else DEFAULT_CONFIG["total_timesteps"]
+    env_config["total_timesteps"] = run_timesteps
 
     exp_dir = os.path.join(save_dir, ablation_name, variant_name, f"seed{seed}")
     os.makedirs(exp_dir, exist_ok=True)
@@ -89,37 +92,48 @@ def run_single_experiment(ablation_name, variant_name, variant_config,
     algo_name = variant_config.get("algo", "PPO")
     algo_map = {"PPO": PPO, "A2C": A2C, "SAC": SAC, "TD3": TD3}
     algo_class = algo_map.get(algo_name, PPO)
+    ON_POLICY_ALGOS = {"PPO", "A2C"}
 
     # Network architecture
     net_arch = variant_config.get("net_arch", [64, 64])
     policy_kwargs = {"net_arch": net_arch}
+    
+    model_kwargs = {
+        "learning_rate": DEFAULT_CONFIG["learning_rate"],
+        "policy_kwargs": policy_kwargs,
+        "verbose": 0,
+        "seed": seed,
+        "tensorboard_log": os.path.join(exp_dir, "tensorboard"),
+    }
+    
+    if algo_name in ON_POLICY_ALGOS:
+        model_kwargs["n_steps"] = DEFAULT_CONFIG["n_steps"]
+        if algo_name == "PPO":
+            model_kwargs["batch_size"] = DEFAULT_CONFIG["batch_size"]
+
+    else:
+        model_kwargs["batch_size"] = DEFAULT_CONFIG["batch_size"]
 
     # Create model
     model = algo_class(
         "MlpPolicy",
         env,
-        learning_rate=DEFAULT_CONFIG["learning_rate"],
-        n_steps=DEFAULT_CONFIG["n_steps"],
-        batch_size=DEFAULT_CONFIG["batch_size"],
-        policy_kwargs=policy_kwargs,
-        verbose=0,
-        seed=seed,
-        tensorboard_log=os.path.join(exp_dir, "tensorboard"),
+        **model_kwargs,
     )
 
     # Train
-    model.learn(total_timesteps=DEFAULT_CONFIG["total_timesteps"])
+    model.learn(total_timesteps=run_timesteps)
 
     # Save model
     model.save(os.path.join(exp_dir, "model"))
     if norm_config.get("use_vecnormalize", False):
-        env.save(os.path.join(exp_dir, "vecnormalize.pkl"))
+        env.save(os.path.join(exp_dir, "vecnormalize_ablation.pkl"))
 
     # Evaluate
     eval_env = DummyVecEnv([make_env(env_config)])
     if norm_config.get("use_vecnormalize", False):
         eval_env = VecNormalize.load(
-            os.path.join(exp_dir, "vecnormalize.pkl"), 
+            os.path.join(exp_dir, "vecnormalize_ablation.pkl"), 
             eval_env
         )
         eval_env.training = False
@@ -137,7 +151,7 @@ def run_single_experiment(ablation_name, variant_name, variant_config,
     return results
 
 
-def run_ablation_study(ablation_name, n_seeds=3, save_dir="./ablation_results"):
+def run_ablation_study(ablation_name, n_seeds=3, save_dir="./ablation_results", total_timesteps=None):
     """Run all variants of an ablation study."""
 
     if ablation_name not in ABLATION_STUDIES:
@@ -165,7 +179,7 @@ def run_ablation_study(ablation_name, n_seeds=3, save_dir="./ablation_results"):
             try:
                 result = run_single_experiment(
                     ablation_name, variant_name, variant_config, 
-                    seed=seed, save_dir=save_dir
+                    seed=seed, save_dir=save_dir, total_timesteps=total_timesteps
                 )
                 variant_results.append(result)
                 print(f"Error: {result['mean_error_pct']:.4f}% | VSWR: {result['mean_vswr']:.4f}")
@@ -220,13 +234,16 @@ def main():
                        help="Number of random seeds per variant")
     parser.add_argument("--save_dir", type=str, default="./ablation_results",
                        help="Directory to save results")
+    parser.add_argument("--total_timesteps", type=int, default=None, 
+                       help="Override DEFAULT_CONFIG total_timesteps (useful for smoke tests)")
 
     args = parser.parse_args()
 
     results = run_ablation_study(
         args.ablation, 
         n_seeds=args.n_seeds,
-        save_dir=args.save_dir
+        save_dir=args.save_dir,
+        total_timesteps=args.total_timesteps,
     )
 
     if results is None:
