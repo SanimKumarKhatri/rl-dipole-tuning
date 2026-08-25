@@ -7,6 +7,7 @@ import gymnasium as gym
 from stable_baselines3 import PPO, A2C, SAC, TD3
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import BaseCallback
 
 from ablations_config import ABLATION_STUDIES, DEFAULT_CONFIG
 from dipole_env_ablation import DipoleEnvAblation
@@ -19,8 +20,31 @@ def make_env(config):
         return env
     return _init
 
+class EpisodeReturnLogger(BaseCallback):
+    def __init__(self, log_path, verbose=0):
+        super().__init__(verbose)
+        self.log_path = log_path
+        self.episode_returns = []
+        self.episode_lengths = []
+        self.current_return = 0
+        self.current_length = 0
+        
+    def _on_step(self) -> bool:
+        self.current_return += self.locals["rewards"][0]
+        self.current_length += 1
+        if self.locals["dones"][0]:
+            self.episode_returns.append(self.current_return)
+            self.episode_lengths.append(self.current_length)
+            self.current_return = 0
+            self.current_length = 0
+        return True
+    
+    def _on_training_end(self) -> None:
+        np.savez(self.log_path, 
+                 returns=np.array(self.episode_returns),
+                 lengths=np.array(self.episode_lengths))
 
-def evaluate_policy(model, env, n_eval_episodes=10):
+def evaluate_policy(model, env, n_eval_episodes=20):
     episode_lengths = []
     episode_rewards = []
     final_errors = []
@@ -48,6 +72,9 @@ def evaluate_policy(model, env, n_eval_episodes=10):
         final_vswrs.append(info["vswr"])
         final_lengths.append(info["length"])
 
+    success_threshold = 2.0
+    success_rate = sum(1 for e in final_errors if e < success_threshold) / len(final_errors)
+
     return {
         "mean_length": float(np.mean(episode_lengths)),
         "std_length": float(np.std(episode_lengths)),
@@ -59,6 +86,8 @@ def evaluate_policy(model, env, n_eval_episodes=10):
         "std_vswr": float(np.std(final_vswrs)),
         "mean_final_length": float(np.mean(final_lengths)),
         "std_final_length": float(np.std(final_lengths)),
+        "success_rate": float(success_rate),
+        "median_error_pct": float(np.median(final_errors)),
     }
 
 
@@ -122,7 +151,8 @@ def run_single_experiment(ablation_name, variant_name, variant_config,
     )
 
     # Train
-    model.learn(total_timesteps=run_timesteps)
+    callback = EpisodeReturnLogger(os.path.join(exp_dir, "training_curves.npz"))
+    model.learn(total_timesteps=run_timesteps, callback=callback)
 
     # Save model
     model.save(os.path.join(exp_dir, "model"))
@@ -230,7 +260,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run ablation studies for RL dipole antenna")
     parser.add_argument("--ablation", type=str, required=True,
                        help="Name of ablation study to run")
-    parser.add_argument("--n_seeds", type=int, default=3,
+    parser.add_argument("--n_seeds", type=int, default=5,
                        help="Number of random seeds per variant")
     parser.add_argument("--save_dir", type=str, default="./ablation_results",
                        help="Directory to save results")

@@ -103,6 +103,9 @@ class DipoleEnvAblation(gym.Env):
             freq_mhz = self.target_freq_mhz,
             wire_radius_m = self.wire_radius_m,
         )
+        # adding noise 
+        noise_std = self.config.get("vswr_noise_std", 0.5)
+        vswr = max(1.0, vswr + self.np_random.normal(0, noise_std))
         return vswr
 
     def _get_observation(self):
@@ -125,11 +128,16 @@ class DipoleEnvAblation(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        init_type = self.config.get("init_type", "random")
+        init_type = self.config.get("init_type", "adversarial")
         if init_type == "random":
             self.current_length = self.np_random.uniform(self.length_min, self.length_max)
         elif init_type == "near_theory":
             self.current_length = self.theoretical_length + self.np_random.uniform(-0.1, 0.1)
+        elif init_type == "adversial":
+            if self.np_random.random() < 0.5:
+                self.current_length = self.length_min + 0.05 * (self.length_max - self.length_min)
+            else:
+                self.current_length = self.length_max - 0.05 * (self.length_max - self.length_min)
         else:  # fixed
             self.current_length = 1.0
 
@@ -144,7 +152,8 @@ class DipoleEnvAblation(gym.Env):
             delta = self.discrete_actions[int(action)]
             self.current_length += delta
         elif self.action_type == "continuous_absolute":
-            self.current_length = float(action[0])
+            raw = float(np.clip(action[0], -1.0, 1.0))
+            self.current_length = self.length_min + (raw + 1.0) / 2.0 * (self.length_max - self.length_min)
         else:
             delta = float(action[0])
             self.current_length += delta
