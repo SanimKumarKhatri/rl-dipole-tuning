@@ -115,14 +115,13 @@ def plot_3d_comparison(r_free, r_ground):
     plt.close()
 
 if __name__ == "__main__":
-    r_free = simulate_dipole(RESONANT_LENGTH, FREQ_MHZ, ground=False)
-    r_ground = simulate_dipole(RESONANT_LENGTH, FREQ_MHZ, ground=True)
+    r_free = simulate_dipole(RESONANT_LENGTH, FREQ_MHZ, ground=False, return_pattern=True)
+    r_ground = simulate_dipole(RESONANT_LENGTH, FREQ_MHZ, ground=True, return_pattern=True)
 
-    print(f"Free Space:  Z={r_free['impedance']:.1f} Ω | VSWR={r_free['vswr']:.2f} | Peak Gain={r_free['max_gain_dbi']:.2f} dBi")
-    print(f"Real Ground: Z={r_ground['impedance']:.1f} Ω | VSWR={r_ground['vswr']:.2f} | Peak Gain={r_ground['max_gain_dbi']:.2f} dBi")
+    print(f"Free Space:  Z={r_free.get('impedance', 0):.1f} Ω | VSWR={r_free.get('vswr', 0):.2f} | Peak Gain={r_free.get('max_gain_dbi', 0.0):.2f} dBi")
+    print(f"Real Ground: Z={r_ground.get('impedance', 0):.1f} Ω | VSWR={r_ground.get('vswr', 0):.2f} | Peak Gain={r_ground.get('max_gain_dbi', 0.0):.2f} dBi")
 
     plot_vswr()
     plot_2d_polar_comparison(r_free, r_ground)
     plot_3d_comparison(r_free, r_ground)
-    plot_cartesian_pattern(r_free, r_ground)
     print("All plots generated successfully!")
