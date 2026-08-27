@@ -1,7 +1,8 @@
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
-from dipole_env import simulate_dipole_vswr, MAX_STEPS
+from nec_core import simulate_dipole
+from dipole_env import MAX_STEPS
 
 class DipoleEnvAblation(gym.Env):
     """
@@ -98,11 +99,12 @@ class DipoleEnvAblation(gym.Env):
         return spaces.Box(low=low, high=high, dtype=np.float32)
 
     def _run_nec(self):
-        _, vswr = simulate_dipole_vswr(
+        res = simulate_dipole(
             length_m = self.current_length,
             freq_mhz = self.target_freq_mhz,
             wire_radius_m = self.wire_radius_m,
         )
+        vswr = float(res["vswr"])
         # adding noise 
         noise_std = self.config.get("vswr_noise_std", 0.5)
         vswr = max(1.0, vswr + self.np_random.normal(0, noise_std))
