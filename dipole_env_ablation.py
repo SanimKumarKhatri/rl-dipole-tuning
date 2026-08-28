@@ -135,7 +135,7 @@ class DipoleEnvAblation(gym.Env):
             self.current_length = self.np_random.uniform(self.length_min, self.length_max)
         elif init_type == "near_theory":
             self.current_length = self.theoretical_length + self.np_random.uniform(-0.1, 0.1)
-        elif init_type == "adversial":
+        elif init_type == "adversarial":
             if self.np_random.random() < 0.5:
                 self.current_length = self.length_min + 0.05 * (self.length_max - self.length_min)
             else:
