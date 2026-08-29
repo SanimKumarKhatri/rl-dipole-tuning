@@ -2,7 +2,7 @@ import numpy as np
 from stable_baselines3 import PPO
 import matplotlib.pyplot as plt
 from stable_baselines3.common.monitor import Monitor
-from dipole_env import DipoleEnv, simulate_dipole_vswr, MAX_STEPS
+from dipole_env import DipoleEnv, MAX_STEPS
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
 TARGET_FREQ_MHZ = 2400.0
