@@ -73,6 +73,64 @@ Mean episode reward (rollout/ep_rew_mean) over 300,000 training timesteps. Rewar
 **Agent trajectory (single evaluation episode):**
 ![](./convergence_2_4ghz.png)
 Length and VSWR at each step of a deterministic evaluation episode, starting from a random initial length near 0.079 m. The agent moves length steadily toward the theoretical resonant length (dashed red line), with VSWR dropping from ~14 to near the termination threshold (dashed green line) within the first ~20 steps, then holding in a tight band around resonance for the remainder of the episode.
+
+## Ablation Study (2.4 GHz)
+
+To understand which design choices matter at 2.4 GHz, controlled ablations was ran across five axes: reward function, observation space, action space, normalization, and algorithm. Each variant was trained with **5 random seeds**; values are mean $\pm$ standard deviation across seeds, evaluated over 20 deterministic episodes per seed.
+
+### Reward Function
+
+| Variant | Formula | Mean Error (%) | Mean VSWR |
+|---|---|---|---|
+| raw_vswr | -VSWR | 6.73 $\pm$ 2.67 | 3.00 $\pm$ 0.93 |
+| log_vswr | -log(VSWR) | 7.33 $\pm$ 3.34 | 3.68 $\pm$ 1.53 |
+| distance_ideal | -abs(L - 0.06) | 17.48 $\pm$ 3.34 | 27.84 $\pm$ 12.23 |
+| exponential | -exp(VSWR) | 32.15 $\pm$ 14.71 | 107.71 $\pm$ 71.60 |
+
+`raw_vswr` and `log_vswr` perform best, within a standard deviation of each other. The log transform was originally introduced to smooth early-training gradients, but the raw VSWR penalty works almost as well for this single-parameter problem. Distance-based and exponential rewards fail because they either ignore the EM simulator's true signal or explode numerically for detuned lengths, exponential's mean training return reaches roughly $-1.2\times10^{10}$, and its 14.71 point standard deviation (vs. 2.67-3.34 for the other three) shows it is not just worse on average but far less consistent across seeds.
+
+![](./ablation_plots/reward_function_bar.png)
+
+Learning curves: 
+![](./ablation_plots/reward_function_curves.png)
+
+### Observation Space
+
+| Variant | Observation | Mean Error (%) | Mean VSWR |
+|---|---|---|---|
+| length_vswr | [length, VSWR] | 8.12 $\pm$ 4.08 | 4.15 $\pm$ 2.22 |
+| length_only | [length] | 14.02 $\pm$ 18.10 | 34.29 $\pm$ 63.36 |
+| vswr_only | [VSWR] | 23.41 $\pm$ 13.52 | 69.11 $\pm$ 77.11 |
+| with_step | [length, VSWR, step_count] | 11.93 $\pm$ 8.49 | 5.42 $\pm$ 3.72 |
+| with_gradient | [length, VSWR, d(VSWR)/dL] | 13.97 $\pm$ 8.87 | 28.32 $\pm$ 47.19 |
+
+`length_vswr` (the default) is the clear winner, and also has the tightest spread across seeds. VSWR alone is insufficient because the policy cannot distinguish whether it is above or below resonance without length context, `length_only` and `vswr_only` both carry very high seed-to-seed variance ($\pm$18.10 and $\pm$13.52), suggesting these observation spaces are not just worse on average but unreliable run-to-run. Adding step count or a numerical gradient estimate does not help and adds noise.
+
+![](./ablation_plots/observation_space_bar.png)
+
+Learning curves: 
+![](./ablation_plots/observation_space_curves.png)
+
+`length_vswr` (green) and `with_gradient` (purple) climb fastest early on, but `with_gradient`'s higher-noise observation costs it accuracy by the end (13.97% final error vs. `length_vswr`'s 8.12%)m a faster-rising curve doesn't translate to a better final policy here. `vswr_only` (blue) lags significantly, confirming that length is a necessary signal for directional tuning.
+
+### Normalization
+
+| Variant | Mean Error (%) | Mean VSWR |
+|---|---|---|
+| vecnormalize_full | 5.25 $\pm$ 0.87 | 1.90 $\pm$ 0.24 |
+| vecnormalize_obs_only | 7.10 $\pm$ 3.38 | 3.60 $\pm$ 1.67 |
+| vecnormalize_reward_only | 16.47 $\pm$ 4.42 | 12.78 $\pm$ 2.47 |
+| none | 23.32 $\pm$ 6.53 | 83.81 $\pm$ 75.81 |
+
+Full VecNormalize is critical with 4.4 times lower error than no normalization, and a tighter spread ($\pm$0.87 vs. $\pm$6.53). Without observation normalization, the policy ignores length (scale ~0.06 m) relative to VSWR (scale ~1-14). Reward normalization alone actually is worse relative to observation normalization alone (16.47% vs. 7.10%), likely because it rescales the already well-behaved `-log(VSWR)` into a range that destabilizes the value function.
+
+![](./ablation_plots/normalization_bar.png)
+
+Learning curves: 
+![](./ablation_plots/normalization_curves.png)
+
+The ablations confirm that the original 2.4 GHz design ([length, VSWR] observation, `-log(VSWR)` reward, continuous $\pm$1 mm steps, full VecNormalize, PPO) is well-justified.
+
 ## Setup
 ```bash
 pip install -r requirements.txt
