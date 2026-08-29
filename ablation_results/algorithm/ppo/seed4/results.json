@@ -1,0 +1,14 @@
+{
+  "mean_length": 29.4,
+  "std_length": 1.42828568570857,
+  "mean_reward": -70.71607971191406,
+  "std_reward": 7.2584004402160645,
+  "mean_error_pct": 5.66666693581889,
+  "std_error_pct": 2.260776138143264,
+  "mean_vswr": 2.7658050907156726,
+  "std_vswr": 0.9856085551399927,
+  "mean_final_length": 0.06310000053197143,
+  "std_final_length": 0.0019467914497359653,
+  "success_rate": 0.15,
+  "median_error_pct": 5.0000023748725715
+}

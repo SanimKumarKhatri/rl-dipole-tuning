@@ -3,9 +3,11 @@ __pycache__/
 ablation_results/**/model.zip
 ablation_results/**/vecnormalize.pkl
 ablation_results/**/tensorboard/
+ablation_smoketest/
 *.pyc
 *.zip
 *.pkl
+*.npz
 .ipynb_checkpoints/
 venv/
 .venv/
@@ -35,3 +37,4 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+.crossnote/
