@@ -129,7 +129,7 @@ Full VecNormalize is critical with 4.4 times lower error than no normalization, 
 Learning curves: 
 ![](./ablation_plots/normalization_curves.png)
 
-The ablations confirm that the original 2.4 GHz design ([length, VSWR] observation, `-log(VSWR)` reward, continuous $\pm$1 mm steps, full VecNormalize, PPO) is well-justified.
+The ablations confirm that the original 2.4 GHz design ([length, VSWR] observation, `-log(VSWR)` reward, continuous $\pm$ 1 mm steps, full VecNormalize, PPO) is well-justified.
 
 ## Setup
 ```bash
