@@ -14,18 +14,19 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from nec_core import simulate_dipole
 
+
 if __name__ == "__main__":
     freq = 100.0 #MHz
     wavelength = 300.0 / freq  #c/f, wavelength in meters
 
     print("=== Free-space dipole ===")
-    result = simulate_dipole(0.48 * wavelength, freq, ground=False)
+    result = simulate_dipole(0.48 * wavelength, freq, ground=False, return_pattern=True)
     print(f"Z={result['impedance']:.1f} ohm, VSWR={result['vswr']:.3f}, "
           f"peak gain={result['max_gain_dbi']:.2f} dBi "
           f"at theta={result['gain_direction'][0]:.0f}, phi={result['gain_direction'][1]:.0f}")
  
     print("\n=== Horizontal dipole, quarter-wave above real ground ===")
-    result_g = simulate_dipole(0.48 * wavelength, freq, ground=True)
+    result_g = simulate_dipole(0.48 * wavelength, freq, ground=True, return_pattern=True)
     print(f"Z={result_g['impedance']:.1f} ohm, VSWR={result_g['vswr']:.3f}, "
           f"peak gain={result_g['max_gain_dbi']:.2f} dBi "
           f"at theta={result_g['gain_direction'][0]:.0f}, phi={result_g['gain_direction'][1]:.0f}")
