@@ -1,0 +1,35 @@
+{
+  "golden_section": {
+    "n_calls": 4,
+    "n_calls_std": 0.0,
+    "best_vswr": 1.4483827323193366,
+    "best_vswr_std": 0.0,
+    "converged": true,
+    "n_runs": 1
+  },
+  "reactance_bisection": {
+    "n_calls": 18,
+    "n_calls_std": 0.0,
+    "best_vswr": 1.4346881751653944,
+    "best_vswr_std": 0.0,
+    "converged": true,
+    "n_runs": 1
+  },
+  "scipy_bounded": {
+    "n_calls": 12,
+    "n_calls_std": 0.0,
+    "best_vswr": 1.4242528309874873,
+    "best_vswr_std": 0.0,
+    "converged": true,
+    "n_runs": 1
+  },
+  "ppo_inference": {
+    "n_calls": 15.8,
+    "n_calls_std": 9.130169768410662,
+    "best_vswr": 1.4541396635076687,
+    "best_vswr_std": 0.028950221666380935,
+    "converged": true,
+    "n_runs": 5,
+    "note": "inference only - excludes 300000 training timesteps paid once"
+  }
+}
