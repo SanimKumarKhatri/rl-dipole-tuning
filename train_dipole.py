@@ -9,6 +9,7 @@ TARGET_FREQ_MHZ = 2400.0
 LENGTH_MIN = 0.03
 LENGTH_MAX = 0.09
 WIRE_RADIUS_M = 0.00015
+SEED = 42
 
 def plot_agent_trajectory(steps, lengths, vswrs, theory_length, output_path="convergence_2_4ghz.png"):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
@@ -45,8 +46,7 @@ def make_env():
 def main():
     train_env = DummyVecEnv([make_env])
     train_env = VecNormalize(train_env, norm_obs=True, norm_reward=True, clip_obs=10.0)
-    model = PPO("MlpPolicy", train_env, verbose=1, n_steps=256, batch_size=64, learning_rate=3e-4, tensorboard_log="tb_logs")
-
+    model = PPO("MlpPolicy", train_env, verbose=1, n_steps=256, batch_size=64, learning_rate=3e-4, tensorboard_log="tb_logs", seed=SEED)
     print("Training PPO agent...")
     model.learn(total_timesteps=300000)
 
