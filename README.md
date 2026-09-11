@@ -7,7 +7,7 @@ Using PPO (via Stable-Baselines3) to learn the optimal length of a center-fed ha
 
 The textbook answer for a half-wave dipole length is well known,  L $\approx$ 0.48 $\times$ $\lambda$, and a simple bisection or grid search over length would converge to a low-VSWR design just fine for this single-parameter case.
 
-I used this as a deliberately small, well-understood problem to build and debug an RL loop against a real EM solver (NEC2) rather than an analytic reward function. The end goal is to extend this to antenna geometries where there isn't a closed-form target (multi-element arrays, loaded elements, non-uniform wire radius) where a search over evaluations against a real solver is closer to what tools like this would actually be useful for. Starting with a dipole, where I can sanity check the RL result against 0.48 $\lambda$, was mainly a way to validate that the following pipeline was correct before moving on a problem without a known-good answer.
+We used this as a deliberately small, well-understood problem to build and debug an RL loop against a real EM solver (NEC2) rather than an analytic reward function. The end goal is to extend this to antenna geometries where there isn't a closed-form target (multi-element arrays, loaded elements, non-uniform wire radius) where a search over evaluations against a real solver is closer to what tools like this would actually be useful for. Starting with a dipole, where we can sanity check the RL result against 0.48 $\lambda$, was mainly a way to validate that the following pipeline was correct before moving on a problem without a known-good answer.
 
 ```mermaid
 flowchart LR
@@ -74,6 +74,47 @@ Mean episode reward (rollout/ep_rew_mean) over 300,000 training timesteps. Rewar
 ![](./convergence_2_4ghz.png)
 Length and VSWR at each step of a deterministic evaluation episode, starting from a random initial length near 0.079 m. The agent moves length steadily toward the theoretical resonant length (dashed red line), with VSWR dropping from ~14 to near the termination threshold (dashed green line) within the first ~20 steps, then holding in a tight band around resonance for the remainder of the episode.
 
+## Why does VSWR plateau above the 1.05 threshold?
+
+Both the 100 MHz and 2.4 GHz results above converge to a stable VSWR (1.43 and 1.44 respectively) that consistently falls short of the 0.05 termination threshold, described above as the agent "navigating toward true physical resonance rather than a local minimum." This section explains the mechanism.
+
+A dipole's feed impedance is `Z = R + jX`. Length controls the reactance `X`, driving it to zero at resonance - but it does not meaningfully change the resonant resistance `R`, which is set by the wire's length-to-radius ratio. For this wire (length/radius ~ 400), `R` at resonance is ~72-75 ohm. VSWR requires both `X ~ 0` and `R ~ 50` ohm simultaneously:
+
+```
+Gamma = (R - 50) / (R + 50) = 22 / 122 ~ 0.180
+VSWR = (1 + Gamma) / (1 - Gamma) ~ 1.44
+```
+
+This matches the observed plateau closely. With length as the only free variable, no length exists that satisfies both conditions - **VSWR < 1.05 is very likely physically unreachable for this bare dipole geometry, independent of training time or algorithm.**
+
+Verified five independent ways, all agreeing to 2-3 significant figures: golden-section search (1.4243), reactance-bisection root-finding on X=0 (1.4347), `scipy.optimize.minimize_scalar` (1.4243), a PPO policy trained for 20k timesteps (1.4245), and the full 300k-timestep run above (1.4266-1.4377 across runs). Achieving true VSWR < 1.05 on a bare dipole would need an actual matching technique (folded dipole, gamma match, L-network) - a different antenna design, not a different length.
+
+## Classical Baseline Comparison
+
+Given the problem is single-parameter (length) and the reward surface is smooth, we benchmarked three classical optimizers against the trained PPO policy at 2.4 GHz:
+
+| Method | Calls to converge | Best VSWR |
+|---|---|---|
+| Golden-section search | 4 | 1.4484 |
+| Reactance-bisection | 18 | 1.4347 |
+| scipy.optimize (bounded Brent) | 12 | 1.4243 |
+| PPO (inference only, 5 seeds) | 15.8 $\pm$ 9.1 | 1.4541 $\pm$ 0.029 |
+| *PPO (training, one-time cost)* | *300,000* | - |
+
+All four converge to the same physical floor. Classical methods match or beat PPO's per-evaluation call count with zero training investment. For this specific task, classical optimization is the more efficient tool - the RL loop's value here is methodological (validating the NEC2/gym/PPO pipeline against a known-good answer, per "Why RL for this?" above) rather than a performance win over simpler alternatives.
+
+## Generalization Across Frequencies
+
+Since the trained policy's only advantage over classical search would be handling new conditions without retraining, we evaluated the 2.4 GHz-trained model, unmodified, on frequencies it never trained on:
+
+| Frequency | True resonant length | PPO best_length | Result |
+|---|---|---|---|
+| 2450 MHz (near training) | 0.05833 m | ~0.058 m | Mostly converges |
+| 2000 MHz | 0.07043 m | ~0.060 m | Fails - defaults to training-frequency length |
+| 1800 MHz | 0.07918 m | ~0.060 m | Fails - defaults to training-frequency length |
+
+The policy does not generalize beyond a narrow band around its training frequency. At 2000 and 1800 MHz it converges to ~0.06 m regardless of the true target - the length correct *for 2.4 GHz*, not for the frequency it was actually evaluated against. This is expected given the observation space is `[length, VSWR]` with no frequency signal: the policy has no way to distinguish "VSWR is high because I'm at the wrong length for this frequency" from "VSWR is high because I'm at the wrong length, period." Generalizing across frequencies would require frequency in the observation space and training across a distribution of frequencies, not a fixed one - not yet implemented here.
+
 ## Ablation Study (2.4 GHz)
 
 To understand which design choices matter at 2.4 GHz, controlled ablations was ran across five axes: reward function, observation space, action space, normalization, and algorithm. Each variant was trained with **5 random seeds**; values are mean $\pm$ standard deviation across seeds, evaluated over 20 deterministic episodes per seed.
@@ -130,6 +171,13 @@ Learning curves:
 ![](./ablation_plots/normalization_curves.png)
 
 The ablations confirm that the original 2.4 GHz design ([length, VSWR] observation, `-log(VSWR)` reward, continuous $\pm$ 1 mm steps, full VecNormalize, PPO) is well-justified.
+
+## Known Methodological Notes (ablation study)
+
+Two additional findings surfaced during later analysis, relevant to reading the ablation tables above:
+
+- **Seed variance is large at the ablation study's training budget** (10,000 timesteps, 30-step episodes, adversarial initialization). A controlled comparison (same 10k timesteps, 150-step episodes, random init) showed near-zero seed variance (std=0.009 vs 3.07), isolating the short episode length / adversarial reset combination, not PPO or the reward function, as the main driver of the spread reported above.
+- **`exponential`'s reward is not actually bounded to a learnable range** - `min(v-1, 20)` caps the exponent, not the output, so `exp(20) ~ 4.85e8` is still reachable per step. Its mean training return (~-1.2e10, noted above) is 7+ orders of magnitude larger than `raw_vswr`/`log_vswr`'s. This scale mismatch likely explains most of `exponential`'s poor, high-variance results independent of whether distance-to-target shaping is conceptually sound.
 
 ## Setup
 ```bash
