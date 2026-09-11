@@ -145,7 +145,7 @@ Learning curves:
 | with_step | [length, VSWR, step_count] | 11.93 $\pm$ 8.49 | 5.42 $\pm$ 3.72 |
 | with_gradient | [length, VSWR, d(VSWR)/dL] | 13.97 $\pm$ 8.87 | 28.32 $\pm$ 47.19 |
 
-`length_vswr` (the default) is the clear winner, and also has the tightest spread across seeds. VSWR alone is insufficient because the policy cannot distinguish whether it is above or below resonance without length context, `length_only` and `vswr_only` both carry very high seed-to-seed variance ($\pm 18.10$ and $\pm 13.52$), suggesting these observation spaces are not just worse on average but unreliable run-to-run. Adding step count or a numerical gradient estimate does not help and adds noise.
+`length_vswr` (the default) is the clear winner, and also has the tightest spread across seeds. VSWR alone is insufficient because the policy cannot distinguish whether it is above or below resonance without length context, `length_only` and `vswr_only` both carry very high seed-to-seed variance ($\pm 18.10$ and $\pm 13.52$), suggesting that these observation spaces are not just worse on average but unreliable run-to-run. Adding step count or a numerical gradient estimate does not help and adds noise.
 
 ![](./ablation_plots/observation_space_bar.png)
 
